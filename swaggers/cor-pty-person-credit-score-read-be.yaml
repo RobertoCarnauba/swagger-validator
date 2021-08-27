@@ -1,0 +1,373 @@
+swagger: '2.0'
+info:
+  description: Credit score query based on data grouping
+  version: 1.0.0
+  title: Person Credit Score API  
+  contact:
+    name: Patricia Vitor das Virgens 
+    url: http://hdixbbs1.hdi.br:7990/projects/HSE/repos/cor-pty-person-credit-score-read-be/browse 
+    email: patricia.virgens@ext.hdi.com.br 
+
+host: api.cor-pty-person-credit-score-read-be.endpoints.cor-backoffice-clusters.cloud.goog  
+basePath: /corporate/party/v1 
+
+schemes:
+  - https
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: key
+    in: query
+  oauth2_key:
+    authorizationUrl: ''
+    flow: implicit
+    type: oauth2
+    x-google-issuer: hdi-corporate-auth@ins-cross-security-auth-dev.iam.gserviceaccount.com
+    x-google-jwks_uri: https://www.googleapis.com/robot/v1/metadata/x509/hdi-corporate-auth@ins-cross-security-auth-dev.iam.gserviceaccount.com
+    x-google-audiences: api.hdi.com.br
+security:
+  - api_key: []
+    oauth2_key: []
+
+parameters:
+  companyId:      
+    in: header
+    name: X-Company-Id
+    required: true
+    type: string
+    description: 'Id of the Company that is using the API.'
+  applicationId:   
+    in: header
+    name: X-Application-Id
+    required: true
+    type: string
+    description: 'Id of the Application that is using the API.'
+  userId:           
+    in: header
+    name: X-User-Id
+    required: true
+    type: string
+    description: 'Id of the User that is using the API.'
+  traceId:         
+    name: X-Trace-Id
+    in: header
+    description: 'Trace ID'
+    required: false  
+    type: string
+  requestBody:
+    name: RequestBody
+    in: body
+    description: 'Resquest bureau parameters'
+    schema:
+      $ref: '#/definitions/CustomerScore'
+    
+responses:
+  200-Ok:
+    description: 'Successful Request'
+    schema:
+      $ref: '#/definitions/CreditScore'
+  204-NoContent:
+    description: 'No content responses'
+  400-BadRequest:
+    description: 'Bad request'
+    schema:
+      $ref: '#/definitions/ApiError'
+  401-Unauthorized:
+    description: 'Unauthorized'
+    schema:
+      $ref: '#/definitions/ApiError'
+  403-Forbidden:
+    description: 'Forbidden'
+    schema:
+      $ref: '#/definitions/ApiError'
+  404-NotFound:
+    description: 'Not found'
+    schema:
+      $ref: '#/definitions/ApiError'
+  405-DataInvalid:
+    description: 'Data input not supplied or invalid'
+    schema:
+      $ref: '#/definitions/ApiError'
+  453-BusinessError:
+    description: 'Business Exception'
+    schema:
+      $ref: '#/definitions/BusinessError'
+  500-Exception:
+    description: 'Internal Server Error'
+    schema:
+      $ref: '#/definitions/ApiError'
+paths:
+  /persons/score: 
+    post:
+      tags:
+        - Person Credit Score
+      description: API to post to load people's Scores
+      operationId: postPersonsScore
+      summary: API to post to load people's Scores
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/companyId'
+        - $ref: '#/parameters/applicationId'
+        - $ref: '#/parameters/userId'
+        - $ref: '#/parameters/traceId'
+        - $ref: '#/parameters/requestBody'  
+      responses:
+        200:
+          $ref: '#/responses/200-Ok'
+        401:
+          $ref: '#/responses/401-Unauthorized'
+        403:
+          $ref: '#/responses/403-Forbidden'
+        404:
+          $ref: '#/responses/404-NotFound'
+        405:
+          $ref: '#/responses/405-DataInvalid'
+        453:
+          $ref: '#/responses/453-BusinessError'
+        500:
+          $ref: '#/responses/500-Exception'
+      deprecated: false
+definitions:
+  BusinessError: 
+    title: BusinessError
+    type: object
+    description: Error API response
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: Error ID
+      message:
+        type: string
+        description: Error Details
+      description:
+        type: string
+        description: Error Details
+      errors:
+        type: array
+        description: Membership Erros
+        items:
+          $ref: '#/definitions/ApiError'
+      businessNotifications:
+        type: array
+        description: Membership Erros
+        items:
+          $ref: '#/definitions/BusinessNotifications'
+  ApiError: 
+    title: ApiError
+    description: Error API response
+    type: object
+    properties:
+      code:
+        type: string
+        description: Internal error ID
+      description:
+        type: string
+        description: Detailed error description
+      errors:
+        type: array
+        description: List of errors
+        items:
+          $ref: '#/definitions/ObjectError'
+      message:
+        type: string
+        description: Basic message error
+  ObjectError:
+    title: ObjectError
+    description: Error Entity
+    type: object
+    properties:
+      code:
+        type: string
+        description: Id of the technical exception
+      message:
+        type: string
+        description: Technical message
+      nativeMessage:
+        type: string
+        description: Native error message
+      trackId:
+        type: string
+        description: Track id of transaction process
+  BusinessNotifications:
+    type: object
+    description: Error Entity
+    title: BusinessNotifications
+    properties:
+      code:
+        type: string
+        description: Error ID
+      description:
+        type: string
+        description: Error Description
+      type:
+        type: string
+        description: info | warning
+  CustomerScore: 
+    title: CustomerScore
+    description: Request Body
+    type: object
+    properties:
+      companyId:
+        type: string
+        description: Company ID
+        example: 01
+      quotation:
+        $ref: '#/definitions/Quotation'   
+      customer:
+        $ref: '#/definitions/Customer'          
+      broker:
+        $ref: '#/definitions/Broker'     
+      additionalVariable:
+        type: array
+        items:
+          $ref: '#/definitions/AdditionalVariable'
+  Customer:
+    title: Customer
+    description: 'Customer'
+    type: object
+    properties:
+      name:
+        type: string
+        description: 'Customer Name'
+      document:
+        $ref: '#/definitions/Document'
+      address:
+        $ref: '#/definitions/Address'
+  Document:
+    type: object
+    title: Document
+    description: 'Document Identification Entity'
+    properties:
+      type:
+         $ref: '#/definitions/DomainData'
+         description: 'Type of document 1 - CPF; 2 - CNPJ'
+      number:
+        description: Value Number
+        type: string
+        example: '12345678901'
+  DomainData:
+    type: object
+    title: DomainData
+    description: 'Data of Domain structure'
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: 'Id of Data'
+      description:
+        type: string
+        description: 'Description of Data'
+  Address:
+    description: Address Entity
+    type: object
+    properties:
+      cityCode:
+        type: string
+        description: City Code
+        example: 'SPO'
+      postalCode:
+        type: string
+        description: Postal Code
+        example: '123456789'
+  Broker:
+    type: object
+    title: Broker
+    description: 'Broker entity'
+    properties:
+      branchCode:
+        type: string
+        description: 'Internal Branch Code'
+      typeCode:
+        type: string
+        description: 'Internal Broker Type (C - F)'   
+        example: 'F'
+  Quotation:
+    type: object
+    title: Quotation
+    description: 'Quotation Details'
+    properties:
+      quoteDate:
+        type: string
+        format: date
+        description: Date Quotation
+        example: '2017-07-21'
+      productCode:
+        type: string
+        description: Code product
+        example: '005'    
+  CreditScore: 
+    title: Credit Score
+    description: 'Credit Score SPC/Serasa of customer' 
+    type: object
+    properties:
+      researchId: 
+        type: string
+        description: Research Identification 
+        example: '613556980813722378'
+      score: 
+        type: string
+        description: score indicator 
+        example: '0'
+      ruleKey: 
+        type: string
+        description: Bureau Key 
+        example: '18458712000114|1352'
+      underwritingSource: 
+        type: string
+        description: Bureau Underwriting Source ID
+        example: '1'
+      expirationDate:
+        type: string
+        format: date-time
+        pattern: 'yyyy-MM-dd HH:mm:ss'
+        description: Expiration Date 
+        example: '2017-07-21 17:32:28'
+      scoreSource: 
+        type: string
+        description: Bureau Score 
+        example: '1'
+      keysValue: 
+        type: array
+        description: 'CPFCNPJ_CLIENTE' 
+        items:
+          type: string
+          example: 'CPFCNPJ_CLIENTE'
+      scoreAdditionalVariables:
+        type: array
+        items:
+          $ref: '#/definitions/ScoreAdditionalVariable'
+  AdditionalVariable:
+    title: AdditionalVariable
+    description: ''
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+  ScoreAdditionalVariable:
+    title: ScoreAdditionalVariable
+    description: 'Dinamic Additional Variables from Score'
+    type: object
+    properties:
+      item:
+        type: string
+        description: 'Sequential value\additional score index'
+        example: ''
+      code:
+        type: string
+        description: 'Additional internal score reference code'
+        example: '57'
+      value:
+        type: string
+        description: 'Resulting value referring to the score code'
+        example: '0'
+      name:
+        type: string
+        description: 'Descriptive of what the score code refers to'
+        example: 'VlRefinSerasa'

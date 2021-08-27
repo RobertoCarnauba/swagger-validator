@@ -1,0 +1,232 @@
+swagger: '2.0'
+info:
+  description: 'Dispatcher Runtime to return the fuel types list.'
+  version: 1.0.0
+  title: DR Address location
+
+  contact:
+    name: Kelvin Lins Silva
+    email: 'kelvin.silva@hdi.com.br'
+    url: 'http://hdixbbs1:7990/projects/HSE/repos/cor-ref-fuel-type-list-be/browse'
+    x-technical-owner: 'camila.silva@hdi.com.br'
+    x-api-key: 'AIzaSyD0COYr4NLjzT9w4rfmzgTfJkeSZ4ZGW74' #key dev
+
+host: 'api.cor-ref-fuel-type-list-be.endpoints.cor-backoffice-clusters-dev.cloud.goog'
+
+basePath: /insurance/policy/v1
+
+tags:
+  - name: DR Fuel list
+    description: 'Returns list of the fuel types.'
+
+schemes:
+  - https
+
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: key
+    in: query
+  oauth2_key:
+    authorizationUrl: ''
+    flow: implicit
+    type: oauth2
+    x-google-issuer: hdi-corporate-auth@ins-cross-security-auth-dev.iam.gserviceaccount.com
+    x-google-jwks_uri: https://www.googleapis.com/robot/v1/metadata/x509/hdi-corporate-auth@ins-cross-security-auth-dev.iam.gserviceaccount.com
+    x-google-audiences: api.hdi.com.br
+
+security:
+  - api_key: []
+    oauth2_key: []
+
+parameters:
+  companyId:
+    in: header
+    name: X-Company-Id
+    required: true
+    type: string
+    description: 'Id of the Company that is using the API.'
+  applicationId:
+    in: header
+    name: X-Application-Id
+    required: true
+    type: string
+    description: 'Id of the Application that is using the API.'
+  userId:
+    in: header
+    name: X-User-Id
+    required: true
+    type: string
+    description: 'Id of the User that is using the API.'
+  traceId:
+    in: header
+    name: X-Trace-Id
+    required: true
+    type: string
+    description: 'Id of trace to track the API.'
+
+responses:
+  200-Ok:
+    description: 'Bad request'
+    schema:
+      $ref: '#/definitions/FuelList' # Ajustar com o objeto de retorno
+  400-BadRequest:
+    description: 'Bad request'
+    schema:
+      $ref: '#/definitions/ApiError'
+  401-Unauthorized:
+    description: 'Unauthorized'
+    schema:
+      $ref: '#/definitions/ApiError'
+  403-Forbidden:
+    description: 'Forbidden'
+    schema:
+      $ref: '#/definitions/ApiError'
+  404-DataNotFound:
+    description: 'Data not found'
+    schema:
+      $ref: '#/definitions/ApiError'
+  405-DataInvalid:
+    description: 'Data input not supplied or invalid'
+    schema:
+      $ref: '#/definitions/ApiError'
+  453-BusinessError:
+    description: 'Business Exception'
+    schema:
+      $ref: '#/definitions/BusinessError'
+  500-Exception:
+    description: 'Exception'
+    schema:
+      $ref: '#/definitions/ApiError'
+
+paths:
+  /fuel/list:
+    get:
+      tags:
+        - Dispatcher Runtime of fuel type list
+      summary: Returns the list of fuel types.
+      description: Returns list of fuel types.
+      operationId: getStates
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/companyId'
+        - $ref: '#/parameters/applicationId'
+        - $ref: '#/parameters/userId'
+        - $ref: '#/parameters/traceId'
+
+      responses:
+        200:
+          $ref: '#/responses/200-Ok'
+        400:
+          $ref: '#/responses/400-BadRequest'
+        401:
+          $ref: '#/responses/401-Unauthorized'
+        403:
+          $ref: '#/responses/403-Forbidden'
+        404:
+          $ref: '#/responses/404-DataNotFound'
+        405:
+          $ref: '#/responses/405-DataInvalid'
+        453:
+          $ref: '#/responses/453-BusinessError'
+        500:
+          $ref: '#/responses/500-Exception'
+      deprecated: false
+
+definitions:
+
+  FuelList:
+    type: array
+    items:
+      $ref: '#/definitions/Fuel'
+    title: StateList
+    description: List of Brazilian states.
+
+  Fuel:
+    type: object
+    description: Fuel Entity
+    properties:
+      code:
+        type: string
+        description: Fuek type code
+      name:
+        type: string
+        description: Name description
+
+  ApiError:
+    type: object
+    description: 'Error API responses'
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: 'Error ID'
+      message:
+        type: string
+        description: 'Error Description'
+      description:
+        type: string
+        description: 'Error Details'
+      errors:
+        type: array
+        description: 'Membership Erros'
+        items:
+          $ref: '#/definitions/Error'
+
+  BusinessError:
+    type: object
+    description: 'Error API response'
+    properties:
+      code:
+        type: integer
+        format: int32
+        description: 'Error ID'
+      message:
+        type: string
+        description: 'Error Details'
+      description:
+        type: string
+        description: 'Error Details'
+      errors:
+        type: array
+        description: 'Membership Errors'
+        items:
+          $ref: '#/definitions/Error'
+      businessNotifications:
+        type: array
+        description: 'Membership Errors'
+        items:
+          $ref: '#/definitions/BusinessNotifications'
+    title: BusinessError
+
+  Error:
+    type: object
+    description: 'Error Entity'
+    properties:
+      code:
+        type: string
+        description: 'Error ID'
+      message:
+        type: string
+        description: 'Error Description'
+      nativeMessage:
+        type: string
+        description: 'Native Error description'
+      trackid:
+        type: string
+        description: '(Optional) Track ID of transaction'
+
+  BusinessNotifications:
+    type: object
+    description: 'Error Entity'
+    properties:
+      code:
+        type: string
+        description: 'Error ID'
+      description:
+        type: string
+        description: 'Error Description'
+      type:
+        type: string
+        description: 'info | warning'
